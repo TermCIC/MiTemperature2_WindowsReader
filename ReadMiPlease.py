@@ -102,7 +102,7 @@ async def main(address, selected_device_name, max_retries=10):
                 with open(HISTORICAL_DATA_CSV, mode='w', newline='') as file:
                     writer = csv.writer(file)
                     # Write headers (optional)
-                    writer.writerow(['Index', 'Timestamp', 'Min Temp', 'Min Humidity', 'Max Temp', 'Max Humidity'])
+                    writer.writerow(['Index', 'Timestamp', 'Min Temp', 'Max Temp', 'Min Humidity', 'Max Humidity'])
                     # Write data
                     writer.writerows(handler.historical_data)
                 print(f"Saved historical data to {HISTORICAL_DATA_CSV}")
