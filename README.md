@@ -17,3 +17,5 @@ then run
 ```
 ReadMiPlease.py
 ```
+
+Or, you can just download the release binary "ReadMiPlease v1.0.0"
