@@ -7,7 +7,7 @@ Specific details
 Language: 1000% Python
 Library: Bleak, asyncio
 
-That's all. Just
+That's all. Just ensure you have Python 3.7+ installed
 
 ```
 pip install bleak
