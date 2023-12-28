@@ -98,7 +98,7 @@ async def main(address, selected_device_name, max_retries=10):
 
                 # Stop notifications
                 await client.stop_notify(UUID_HISTORY)
-                HISTORICAL_DATA_CSV = f"DATA[Sensor:{selected_device_name},Time:{datetime.fromtimestamp(time())}].csv"
+                HISTORICAL_DATA_CSV = f"DATA_name_{selected_device_name}_t_{int(time())}.csv"
                 with open(HISTORICAL_DATA_CSV, mode='w', newline='') as file:
                     writer = csv.writer(file)
                     # Write headers (optional)
