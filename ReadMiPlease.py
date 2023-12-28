@@ -1,5 +1,3 @@
-# Read data from Xiaomi Mijia LYWSD03MMC Bluetooth 4.2 Temperature Humidity sensor in Windows
-
 import asyncio
 import json
 import os
@@ -18,8 +16,6 @@ UUID_DATA = 'ebe0ccc1-7a0a-4b0c-8a1a-6ff2997da3a6'  # 3 bytes               READ
 UUID_BATTERY = 'EBE0CCC4-7A0A-4B0C-8A1A-6FF2997DA3A6'  # 1 byte                READ
 UUID_NUM_RECORDS = 'EBE0CCB9-7A0A-4B0C-8A1A-6FF2997DA3A6'  # 8 bytes               READ
 UUID_RECORD_IDX = 'EBE0CCBA-7A0A-4B0C-8A1A-6FF2997DA3A6'  # 4 bytes               READ WRITE
-
-HISTORICAL_DATA_CSV = "historical_data.csv"
 
 
 def ensure_file_exists():
@@ -83,7 +79,7 @@ class BLEDeviceHandler:
         return (time() - self._last_notification_time) > stale_after_seconds
 
 
-async def main(address, max_retries=5):
+async def main(address, selected_device_name, max_retries=10):
     handler = BLEDeviceHandler()
     retries = 0
     while retries < max_retries:
@@ -102,6 +98,7 @@ async def main(address, max_retries=5):
 
                 # Stop notifications
                 await client.stop_notify(UUID_HISTORY)
+                HISTORICAL_DATA_CSV = f"DATA[Sensor:{selected_device_name},Time:{datetime.fromtimestamp(time())}].csv"
                 with open(HISTORICAL_DATA_CSV, mode='w', newline='') as file:
                     writer = csv.writer(file)
                     # Write headers (optional)
@@ -118,8 +115,9 @@ async def main(address, max_retries=5):
     print("Failed to connect after several attempts.")
 
 
-async def scan_ble_devices(existing_devices):
-    devices = await BleakScanner.discover()
+async def scan_ble_devices(existing_devices, scan_duration=30):
+    print("Scanning sensors...(30 seconds)")
+    devices = await BleakScanner.discover(timeout=scan_duration)
     for device in devices:
         if device.name == "LYWSD03MMC":
             if device.address not in existing_devices:
@@ -161,8 +159,9 @@ async def run():
                     # Update the existing devices list with the new name
                     existing_devices[selected_device_address]["name"] = new_name
                     save_devices_to_json(existing_devices)
+                    selected_device_name = new_name
 
-                await main(selected_device_address)
+                await main(selected_device_address, selected_device_name)
                 break  # success, break loop
             else:
                 print("Invalid selection.")
