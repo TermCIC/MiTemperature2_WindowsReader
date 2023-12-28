@@ -24,3 +24,7 @@ ReadMiPlease.py
 ```
 
 Or, you can just download the release binary "ReadMiPlease v1.0.0"
+
+The program would scan sensors in your surrounding area, then ask you to choose one of the sensor:
+<img width="329" alt="image" src="https://github.com/TermCIC/MiTemperature2_WindowsReader/assets/32321661/f73aee2a-0e71-4ddf-a58b-dc6b6cb30512">
+
