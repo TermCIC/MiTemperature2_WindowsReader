@@ -4,8 +4,8 @@
 ReadMi aims to allow Windows users to fetch environmental monitoring data from Xiaomi LYWSD03MMC sensors, which is a light weight and super cheap BLE Temperature/humidity sensor. This software allows you to turn your LYWSD03MMC sensors into dataloggers for your research.
 
 Specific details
-Language: 100% Python
-Library: Bleak, asyncio
+Language: 100% Python,
+Library used: Bleak, asyncio
 
 That's all. Just ensure you have Python 3.7+ installed
 
