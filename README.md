@@ -1,5 +1,3 @@
-Retrieve and Store Historical Data from the Xiaomi LYWSD03MMC Temperature and Humidity Sensor on Windows
+ReadMi: Windows-Compatible BLE Sensor Data Logger for Xiaomi LYWSD03MMC Sensors
 
-While numerous Python scripts exist for extracting historical data from the Xiaomi LYWSD03MMC sensor in a Linux environment,
-information on doing so in Windows is scarce.
-This Python script addresses that gap by demonstrating how to access data from the LYWSD03MMC sensor using the Bleak library in a Windows setting.
+ReadMi aims for environmental monitoring with its Windows-compatible application, designed specifically for Xiaomi LYWSD03MMC sensors. Leveraging BLE technology and Python's asyncio and Bleak library, ReadMi provides a platform for historical data logging.
