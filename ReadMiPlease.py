@@ -141,30 +141,34 @@ async def run():
     while True:
         existing_devices = read_devices_from_json()
         devices = await scan_ble_devices(existing_devices)
+
         if devices:
-            # Display the list of devices
+            print("\nAvailable Devices:")
             for idx, (address, name) in enumerate(devices):
                 print(f"{idx}: {name or 'Unknown'} ({address})")
+            print(f"{len(devices)}: Rescan devices")
 
-            # Ask the user to choose a device
-            selected_index = int(input("Enter the number of the device to connect: "))
-            if 0 <= selected_index < len(devices):
-                selected_device_address, selected_device_name = devices[selected_index]
+            try:
+                selected_index = int(input("Enter the number of the device to connect (or rescan): "))
+                if 0 <= selected_index < len(devices):
+                    selected_device_address, selected_device_name = devices[selected_index]
+                    print(f"-> {selected_device_address} is selected")
 
-                print(f"-> {selected_device_address} is selected")
+                    if selected_device_name is None:
+                        new_name = input("Enter a name for this device: ").strip()
+                        existing_devices[selected_device_address]["name"] = new_name
+                        save_devices_to_json(existing_devices)
+                        selected_device_name = new_name
 
-                # If the name is None, ask the user to input a name
-                if selected_device_name is None:
-                    new_name = input("Enter a name for this device: ").strip()
-                    # Update the existing devices list with the new name
-                    existing_devices[selected_device_address]["name"] = new_name
-                    save_devices_to_json(existing_devices)
-                    selected_device_name = new_name
-
-                await main(selected_device_address, selected_device_name)
-                break  # success, break loop
-            else:
-                print("Invalid selection.")
+                    await main(selected_device_address, selected_device_name)
+                    break  # success, break loop
+                elif selected_index == len(devices):
+                    print("Rescanning devices...")
+                    continue
+                else:
+                    print("Invalid selection.")
+            except ValueError:
+                print("Please enter a valid number.")
         else:
             print("No Mi T/H Sensors found. Retrying in 1 second...")
             await asyncio.sleep(1)
