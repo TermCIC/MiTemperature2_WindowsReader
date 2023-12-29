@@ -1,10 +1,11 @@
 import asyncio
+import csv
 import json
 import os
 import struct
 from datetime import datetime
 from time import time
-import csv
+
 from bleak import BleakClient, BleakScanner, BleakError
 
 history_data = {}
@@ -53,6 +54,7 @@ class BLEDeviceHandler:
         self._last_notification_time = None
         self.tz_offset = 0  # Set your timezone offset here
         self.historical_data = []
+        self.current_reads = None
 
     def process_history_data(self, sender, data):
         (idx, ts, max_temp, max_hum, min_temp, min_hum) = struct.unpack_from('<IIhBhB', data)
@@ -73,6 +75,22 @@ class BLEDeviceHandler:
             self._start_time = sensor_start_time
         return self._start_time
 
+    def process_current_reads(self, sensor_current_reads):
+        if not self.current_reads:
+            current_temperature = int.from_bytes(sensor_current_reads[0:2], byteorder="little", signed=True) / 100
+            current_humidity = int.from_bytes(sensor_current_reads[2:3], byteorder="little", signed=True)
+            current_voltage = int.from_bytes(sensor_current_reads[3:5], byteorder="little", signed=True) / 1000
+            current_battery = min(int(round((current_voltage - 2.1), 2) * 100), 100)
+            self.current_reads = {
+                "Temperature": current_temperature,
+                "Humidity": current_humidity,
+                "Voltage": current_voltage,
+                "Battery": current_battery
+            }
+            print(
+                f"Sensor status: Temperature: {current_temperature}, RH: {current_humidity}%, Battery: {current_battery}%")
+        return self.current_reads
+
     def is_data_stale(self, stale_after_seconds=10):
         if self._last_notification_time is None:
             return False
@@ -87,8 +105,15 @@ async def main(address, selected_device_name, max_retries=10):
             print(f"Trying to connect {address}")
             async with BleakClient(address) as client:
                 print("Connected to:", address)
+
+                # set time
                 sensor_time_pass = await client.read_gatt_char(UUID_TIME)
                 handler.start_time(sensor_time_pass)
+
+                # current reads
+                sensor_current_reads = await client.read_gatt_char(UUID_DATA)
+                handler.process_current_reads(sensor_current_reads)
+
                 # Set up the handler for history data
                 await client.start_notify(UUID_HISTORY, handler.process_history_data)
 
