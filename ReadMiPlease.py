@@ -80,7 +80,7 @@ class BLEDeviceHandler:
             current_temperature = int.from_bytes(sensor_current_reads[0:2], byteorder="little", signed=True) / 100
             current_humidity = int.from_bytes(sensor_current_reads[2:3], byteorder="little", signed=True)
             current_voltage = int.from_bytes(sensor_current_reads[3:5], byteorder="little", signed=True) / 1000
-            current_battery = min(int(round((current_voltage - 2.1), 2) * 100), 100)
+            current_battery = round((current_voltage - 2) / (3.261 - 2) * 100, 2)
             self.current_reads = {
                 "Temperature": current_temperature,
                 "Humidity": current_humidity,
