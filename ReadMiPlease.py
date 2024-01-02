@@ -87,8 +87,10 @@ class BLEDeviceHandler:
                 "Voltage": current_voltage,
                 "Battery": current_battery
             }
+
             print(
-                f"Sensor status: Temperature: {current_temperature}, RH: {current_humidity}%, Battery: {current_battery}%")
+                f"Sensor status: Temperature: {current_temperature}, RH: {current_humidity}%, Voltage: {current_voltage}v, Battery: {current_battery}%")
+            print("----------------------------------------")
         return self.current_reads
 
     def is_data_stale(self, stale_after_seconds=10):
@@ -113,8 +115,14 @@ async def main(address, selected_device_name, max_retries=10):
                 # current reads
                 sensor_current_reads = await client.read_gatt_char(UUID_DATA)
                 handler.process_current_reads(sensor_current_reads)
+                devices = read_devices_from_json()
+                if not devices[address].get("records"):
+                    devices[address]["records"] = {}
+                devices[address]["records"][f"{int(time())}"] = handler.current_reads
+                save_devices_to_json(devices)
 
                 # Set up the handler for history data
+                print("Start to fetch historical data...")
                 await client.start_notify(UUID_HISTORY, handler.process_history_data)
 
                 # Keep the program running to receive notifications
@@ -172,18 +180,22 @@ async def run():
             for idx, (address, name) in enumerate(devices):
                 print(f"{idx}: {name or 'Unknown'} ({address})")
             print(f"{len(devices)}: Rescan devices")
+            print("----------------------------------------")
 
             try:
                 selected_index = int(input("Enter the number of the device to connect (or rescan): "))
                 if 0 <= selected_index < len(devices):
                     selected_device_address, selected_device_name = devices[selected_index]
                     print(f"-> {selected_device_address} is selected")
+                    print("----------------------------------------")
 
                     if selected_device_name is None:
                         new_name = input("Enter a name for this device: ").strip()
                         existing_devices[selected_device_address]["name"] = new_name
                         save_devices_to_json(existing_devices)
                         selected_device_name = new_name
+                        print(f"{selected_device_address} is renamed as {new_name}")
+                        print("----------------------------------------")
 
                     await main(selected_device_address, selected_device_name)
                     break  # success, break loop
