@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Chiu"
+  given-names: "Chun-I"
+  orcid: "https://orcid.org/0000-0002-1603-0736"
+title: "MiTemperature2 WindowsReader"
+version: 2.0.4
+doi: 10.5281/zenodo.1234
+date-released: 2024-12-30
+url: "https://github.com/TermCIC/MiTemperature2_WindowsReader"
