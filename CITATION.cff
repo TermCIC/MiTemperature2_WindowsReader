@@ -5,7 +5,7 @@ authors:
   given-names: "Chun-I"
   orcid: "https://orcid.org/0000-0002-1603-0736"
 title: "MiTemperature2 WindowsReader"
-version: 2.0.4
+version: 1.0.1
 doi: 10.5281/zenodo.10468162
 date-released: 2024-12-30
 url: "https://github.com/TermCIC/MiTemperature2_WindowsReader"
