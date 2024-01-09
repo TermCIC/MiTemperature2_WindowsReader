@@ -9,6 +9,9 @@ ReadMi aims to allow Windows users to fetch environmental monitoring data from X
   <img src="https://github.com/TermCIC/MiTemperature2_WindowsReader/assets/32321661/76909a2c-c337-4bcd-9b52-010fbf21e7bf" width="256" align="center">
 </p>
 
+### Why choose Xiaomi LYWSD03MMC?
+The cost of this sensor is ~5 USD dollars
+
 ### Sensor modification
 You can connect the sensor to two AA batteries, ensuring that it operates for over a year, making it suitable for use with a datalogger.
 
