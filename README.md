@@ -5,7 +5,9 @@ ReadMi aims to allow Windows users to fetch environmental monitoring data from X
 
 <p align="center">
   <img src="https://github.com/TermCIC/MiTemperature2_WindowsReader/assets/32321661/008159ab-862c-459a-854d-f261d8ef7dd1" width="256" align="center">
+  <img src="https://github.com/TermCIC/MiTemperature2_WindowsReader/assets/32321661/42409374-1218-45f3-8ff4-001a33c0e85d" width="256" align="center">
 </p>
+
 
 ### Program details
 Language: 100% Python,
