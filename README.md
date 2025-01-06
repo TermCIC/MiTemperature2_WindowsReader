@@ -20,6 +20,11 @@ Language: 100% Python,
 Library used: Bleak, asyncio
 
 ### How to use
+### Update 2025/01/06
+Now we have GUI for this software
+![image](https://github.com/user-attachments/assets/5bda70f6-9841-4d7a-8d27-735f72b1948a)
+
+
 That's all. Just ensure you have Python 3.7+ installed
 
 ```
