@@ -21,37 +21,6 @@ Library used: Bleak, asyncio
 
 ### How to use
 ### Update 2025/01/06
-Now we have GUI for this software
+Now we have GUI for this software, super easy to use
 ![image](https://github.com/user-attachments/assets/5bda70f6-9841-4d7a-8d27-735f72b1948a)
 
-
-That's all. Just ensure you have Python 3.7+ installed
-
-```
-pip install bleak
-```
-
-then run
-```
-ReadMiPlease.py
-```
-
-Or, you can just download the release binary "ReadMiPlease v1.0.0"
-
-The program would scan sensors in your surrounding area, a json file is created to save names for sensors, then ask you to choose one of the sensor:
-<br>
-<img width="329" alt="image" src="https://github.com/TermCIC/MiTemperature2_WindowsReader/assets/32321661/f73aee2a-0e71-4ddf-a58b-dc6b6cb30512" align="center">
-
-Request to record a name for selected sensor:
-<br>
-<img width="344" alt="image" src="https://github.com/TermCIC/MiTemperature2_WindowsReader/assets/32321661/0671312c-4e37-4817-8bd3-beed3d020aaf" align="center">
-
-Then retreive the data...
-<br>
-<img width="462" alt="image" src="https://github.com/TermCIC/MiTemperature2_WindowsReader/assets/32321661/c179abff-0200-4dfd-963f-c889435914b5" align="center">
-
-A csv file is created in the same folder of the program:
-<br>
-<img width="134" alt="image" src="https://github.com/TermCIC/MiTemperature2_WindowsReader/assets/32321661/bf904ad4-59e0-460f-a3c4-d13d62d4f137" align="center">
-
-Done!
