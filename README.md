@@ -1,4 +1,5 @@
-<img src="https://github.com/TermCIC/MiTemperature2_WindowsReader/blob/main/readmi.ico">
+<img src="https://github.com/TermCIC/MiTemperature2_WindowsReader/blob/main/readmi.ico"><br>
+
 # ReadMi
 ## Windows-Compatible BLE Sensor Data Logger for Xiaomi LYWSD03MMC Sensors
 
