@@ -1,4 +1,12 @@
 @echo off
+echo Processing logo...
+python process_logo.py
+if %errorlevel% neq 0 (
+    echo Logo processing FAILED.
+    pause
+    exit /b 1
+)
+
 echo Cleaning previous build...
 if exist build   rmdir /s /q build
 if exist dist    rmdir /s /q dist
