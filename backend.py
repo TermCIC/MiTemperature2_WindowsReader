@@ -95,11 +95,11 @@ class BLEDeviceHandler:
         return self._start_time
 
     def process_current_reads(self, sensor_current_reads):
-        if not self.current_reads:
+        if self.current_reads is None:
             current_temperature = int.from_bytes(sensor_current_reads[0:2], byteorder="little", signed=True) / 100
             current_humidity = int.from_bytes(sensor_current_reads[2:3], byteorder="little", signed=True)
             current_voltage = int.from_bytes(sensor_current_reads[3:5], byteorder="little", signed=True) / 1000
-            current_battery = round((current_voltage - 2) / (3.261 - 2) * 100, 2)
+            current_battery = round(max(0.0, min(100.0, (current_voltage - 2) / (3.261 - 2) * 100)), 2)
             self.current_reads = {
                 "Temperature": current_temperature,
                 "Humidity": current_humidity,
@@ -150,8 +150,10 @@ async def fetch(address, selected_device_name, max_retries=10):
 
                 await client.start_notify(UUID_HISTORY, handler.process_history_data)
 
-                # Keep the program running to receive notifications
+                fetch_start = time()
                 while not handler.is_data_stale(stale_after_seconds=10):
+                    if time() - fetch_start > 90:
+                        break
                     await asyncio.sleep(1)
 
                 # Stop notifications
@@ -189,21 +191,23 @@ async def scan_ble_devices(existing_devices, scan_duration=30):
     }
     save_tasks_to_json(tasks)
     devices = await BleakScanner.discover(timeout=scan_duration)
+
+    found_addresses = set()
     for device in devices:
         if device.name == "LYWSD03MMC":
+            found_addresses.add(device.address)
             if device.address not in existing_devices:
                 existing_devices[device.address] = {
                     "address": device.address,
                     "name": None,
                     "status": "Available"
                 }
-                device.name = None
             else:
-                for d in existing_devices:
-                    if device.address == d:
-                        existing_devices[device.address]["status"] = "Available"
-                    else:
-                        existing_devices[device.address]["status"] = "Unavailable"
+                existing_devices[device.address]["status"] = "Available"
+
+    for address in existing_devices:
+        if address not in found_addresses:
+            existing_devices[address]["status"] = "Unavailable"
 
     save_devices_to_json(existing_devices)
     tasks = read_tasks_from_json()

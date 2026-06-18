@@ -1,179 +1,176 @@
-document.querySelector("button").onclick = function () {
-  const scanButton = this; // Reference to the button element
-  const countdownDuration = 30; // Countdown duration in seconds
-
-  // Start the countdown
-  startCountdown(scanButton, countdownDuration);
-
-  // Call the eel function to start scanning
+document.getElementById("scanButton").onclick = function () {
+  startCountdown(this, 30);
   eel.scan();
 };
 
 function startCountdown(button, duration) {
-  let remainingTime = duration;
-  button.disabled = true; // Disable the button during the countdown
-  button.style.backgroundColor = "darkgray"; // Change button appearance
-
-  const timer = setInterval(() => {
-    button.textContent = `Syncing... ${remainingTime} seconds`; // Update button text
-    remainingTime--;
-
-    if (remainingTime < 0) {
-      clearInterval(timer); // Stop the timer
-      button.textContent = "Scan sensors"; // Reset button text
-      button.disabled = false; // Re-enable the button
-      button.style.backgroundColor = "green"; // Reset button appearance
+  let t = duration;
+  button.disabled = true;
+  const tick = setInterval(() => {
+    button.textContent = `Scanning... ${t}s`;
+    t--;
+    if (t < 0) {
+      clearInterval(tick);
+      button.textContent = "Scan for sensors";
+      button.disabled = false;
     }
-  }, 1000); // Update every second
+  }, 1000);
 }
 
+function formatTimestamp(epochStr) {
+  const d = new Date(parseInt(epochStr, 10) * 1000);
+  return d.toLocaleString();
+}
+
+function taskStatusClass(status) {
+  if (!status) return "";
+  const s = status.toLowerCase();
+  if (s === "finished") return "finished";
+  if (s.includes("fail") || s.includes("error")) return "failed";
+  return "running";
+}
+
+function latestReading(records) {
+  if (!records || Object.keys(records).length === 0) return null;
+  const latestKey = Object.keys(records).sort((a, b) => b - a)[0];
+  return records[latestKey];
+}
+
+function buildReadingsHTML(reading) {
+  if (!reading) return '<span class="chip-empty">No readings yet</span>';
+  const battery = Math.min(100, Math.max(0, reading.Battery || 0));
+  return `
+    <span class="chip">${reading.Temperature} °C</span>
+    <span class="chip">${reading.Humidity}% RH</span>
+    <span class="chip">Battery ${battery.toFixed(0)}%</span>
+  `;
+}
+
+function buildFetchButton(address, name) {
+  const btn = document.createElement("button");
+  btn.className = "btn-fetch";
+  btn.textContent = "Fetch data";
+  btn.onclick = async function () {
+    const card = document.getElementById(`sensor-${address}`);
+    const feedback = card ? card.querySelector(".card-feedback") : null;
+    btn.disabled = true;
+    btn.textContent = "Fetching...";
+    if (feedback) feedback.textContent = "Connecting to sensor...";
+    await eel.fetch_data(address, name);
+    if (feedback) feedback.textContent = "Fetch started — see Activity Log for progress.";
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = "Fetch data";
+    }, 3000);
+  };
+  return btn;
+}
+
+function createSensorCard(address, value) {
+  const card = document.createElement("div");
+  card.className = "sensor-card";
+  card.id = `sensor-${address}`;
+
+  const isAvailable = value.status === "Available";
+  const latest = latestReading(value.records);
+
+  card.innerHTML = `
+    <div class="card-top">
+      <div>
+        <div class="name-row">
+          <input class="name-input" type="text" value="${value.name || "Unknown"}" />
+          <button class="btn-name">Save</button>
+        </div>
+        <div class="sensor-address">${value.address}</div>
+      </div>
+      <span class="status-badge ${isAvailable ? "badge-available" : "badge-unavailable"}">
+        ${value.status || "Unavailable"}
+      </span>
+    </div>
+    <div class="readings-row">${buildReadingsHTML(latest)}</div>
+    <div class="fetch-area"></div>
+    <div class="card-feedback"></div>
+  `;
+
+  const nameInput = card.querySelector(".name-input");
+  const saveBtn = card.querySelector(".btn-name");
+  const feedback = card.querySelector(".card-feedback");
+
+  saveBtn.onclick = () => {
+    const newName = nameInput.value.trim();
+    if (newName) {
+      eel.change_name(value.address, newName);
+      feedback.textContent = `Name saved as "${newName}"`;
+      setTimeout(() => { feedback.textContent = ""; }, 3000);
+    } else {
+      feedback.textContent = "Please enter a valid name.";
+    }
+  };
+
+  if (isAvailable) {
+    card.querySelector(".fetch-area").appendChild(buildFetchButton(address, value.name));
+  }
+
+  return card;
+}
+
+function updateSensorCard(address, value) {
+  const card = document.getElementById(`sensor-${address}`);
+  const isAvailable = value.status === "Available";
+  const latest = latestReading(value.records);
+
+  if (!card) {
+    document.getElementById("sensorContainer").appendChild(createSensorCard(address, value));
+    return;
+  }
+
+  // Update status badge
+  const badge = card.querySelector(".status-badge");
+  badge.textContent = value.status || "Unavailable";
+  badge.className = "status-badge " + (isAvailable ? "badge-available" : "badge-unavailable");
+
+  // Update readings
+  card.querySelector(".readings-row").innerHTML = buildReadingsHTML(latest);
+
+  // Add or remove fetch button based on availability
+  const fetchArea = card.querySelector(".fetch-area");
+  const existingBtn = fetchArea.querySelector(".btn-fetch");
+  if (isAvailable && !existingBtn) {
+    fetchArea.appendChild(buildFetchButton(address, value.name));
+  } else if (!isAvailable && existingBtn) {
+    existingBtn.remove();
+  }
+}
 
 function update_status() {
   eel.update_status()(function (data) {
-    console.log("Raw Data Received from Python:", data); // Log raw data for debugging
-
     try {
-      // Parse the combined data
-      const parsedData = JSON.parse(data);
-      const sensors = parsedData.sensors; // Sensor data (JSON string)
-      const tasks = parsedData.tasks;    // Task data (JSON string)
+      const parsed = JSON.parse(data);
+      const sensors = parsed.sensors;
+      const tasks = parsed.tasks;
 
-      // Get the containers for sensors and tasks
-      const sensorContainer = document.getElementById("sensorContainer");
+      for (const [address, value] of Object.entries(sensors)) {
+        updateSensorCard(address, value);
+      }
+
+      // Rebuild task log: most recent first, capped at 50
       const taskContainer = document.getElementById("taskContainer");
-
-      // Clear existing content in the task container
       taskContainer.innerHTML = "";
-
-      // Parse and display sensor data
-      const sensorData = JSON.parse(sensors);
-      for (const [key, value] of Object.entries(sensorData)) {
-        // Check if a box for this key already exists
-        if (document.getElementById(`sensor-${key}`)) {
-          console.log(`Sensor with key ${key} already exists. Skipping.`);
-          continue; // Skip adding a duplicate box
-        }
-
-        const sensorDiv = document.createElement("div");
-        sensorDiv.className = "sensor-box"; // Use class for styling
-        sensorDiv.id = `sensor-${key}`; // Assign a unique ID based on the key
-        sensorDiv.style.display = "flex";
-        sensorDiv.style.justifyContent = "space-between";
-        sensorDiv.style.alignItems = "center";
-        sensorDiv.style.border = "1px solid #ccc";
-        sensorDiv.style.borderRadius = "5px";
-        sensorDiv.style.padding = "10px";
-        sensorDiv.style.marginBottom = "10px";
-
-        // Left section: Sensor name and update button
-        const leftSection = document.createElement("div");
-        leftSection.style.display = "flex";
-        leftSection.style.flexDirection = "column";
-        leftSection.style.alignItems = "flex-start";
-
-        // Static label: "Sensor name"
-        const label = document.createElement("strong");
-        label.textContent = "Sensor name";
-        label.style.marginBottom = "5px";
-
-        // Create input box for the device name
-        const nameInput = document.createElement("input");
-        nameInput.type = "text";
-        nameInput.value = value.name || "Unknown"; // Pre-fill with the current name or "Unknown"
-        nameInput.style.width = "200px";
-        nameInput.style.marginBottom = "5px";
-        nameInput.style.padding = "5px";
-
-        // Create "Update sensor name" button
-        const updateNameButton = document.createElement("button");
-        updateNameButton.textContent = "Update sensor name";
-        updateNameButton.style.padding = "5px 10px";
-        updateNameButton.style.fontSize = "16px";
-        updateNameButton.style.cursor = "pointer";
-
-        // Add click handler with popup for updating name
-        updateNameButton.onclick = function () {
-          const newName = nameInput.value.trim();
-          if (newName) {
-            eel.change_name(value.address, newName); // Call eel function with address and new name
-            alert(`Your sensor name has been changed to: ${newName}`);
-          } else {
-            alert("Please enter a valid name.");
-          }
-        };
-
-        leftSection.appendChild(label);
-        leftSection.appendChild(nameInput);
-        leftSection.appendChild(updateNameButton);
-
-        // Right section: Other sensor information and Fetch data button
-        const rightSection = document.createElement("div");
-        rightSection.style.textAlign = "left";
-
-        // Sensor information
-        const sensorInfo = `
-          <strong>Key:</strong> ${key}<br>
-          <strong>Address:</strong> ${value.address}<br>
-          <strong>Status:</strong> ${value.status || "Unavailable"}
+      const sorted = Object.entries(tasks).sort((a, b) => b[0] - a[0]).slice(0, 50);
+      for (const [key, value] of sorted) {
+        const entry = document.createElement("div");
+        entry.className = `task-entry ${taskStatusClass(value.status)}`;
+        entry.innerHTML = `
+          <div class="task-time">${formatTimestamp(key)}</div>
+          <div class="task-type">${value.task_type}</div>
+          <div class="task-status">${value.status || "Unknown"}</div>
         `;
-        rightSection.innerHTML = sensorInfo;
-
-        // Add "Fetch data" button for available sensors
-        if (value.status === "Available") {
-          const fetchButton = document.createElement("button");
-          fetchButton.textContent = "Fetch data";
-          fetchButton.style.padding = "5px 10px";
-          fetchButton.style.fontSize = "16px";
-          fetchButton.style.cursor = "pointer";
-          fetchButton.style.marginTop = "10px";
-
-          // Add click handler with popup for fetching data
-          fetchButton.onclick = async function () {
-            await eel.fetch_data(value.address, value.name); // Call eel function with address and name
-            alert(`Started fetching data for: ${value.name || "Unknown"}`);
-          };
-
-          rightSection.appendChild(fetchButton);
-        }
-
-        // Append both sections to the sensor box
-        sensorDiv.appendChild(leftSection);
-        sensorDiv.appendChild(rightSection);
-
-        sensorContainer.appendChild(sensorDiv);
+        taskContainer.appendChild(entry);
       }
-
-      // Parse and display task data
-      const taskData = JSON.parse(tasks);
-      for (const [key, value] of Object.entries(taskData)) {
-        const taskDiv = document.createElement("div");
-        taskDiv.className = "task-box"; // Use class for styling
-        taskDiv.style.border = "1px solid #ccc";
-        taskDiv.style.borderRadius = "5px";
-        taskDiv.style.padding = "10px";
-        taskDiv.style.marginBottom = "10px";
-
-        // Construct HTML content for the task
-        const taskInfo = `
-          <strong>Task:</strong> ${key}<br>
-          <strong>Type:</strong> ${value.task_type}<br>
-          <strong>Status:</strong> ${value.status || "Unknown"}
-        `;
-        taskDiv.innerHTML = taskInfo;
-        taskContainer.appendChild(taskDiv);
-      }
-
-      // Automatically scroll to the bottom of the status messages container
-      taskContainer.scrollTop = taskContainer.scrollHeight;
-    } catch (error) {
-      console.error("Error parsing or displaying data:", error);
+    } catch (e) {
+      console.error("update_status error:", e);
     }
   });
 }
 
-
-// Automatically start fetching sensor data when the page loads
-window.onload = function () {
-    // Start periodically fetching sensor data
-    setInterval(update_status, 1000); // Fetch sensor data every second
-  };
+window.onload = () => setInterval(update_status, 1000);

@@ -46,19 +46,9 @@ async def run_in_background():
 @eel.expose
 def update_status():
     ensure_file_exists()
-    # Read sensors data
     sensors = read_devices_from_json()
-    sensors_json = json.dumps(sensors)
-    # Read tasks data
     tasks = read_tasks_from_json()
-    tasks_json = json.dumps(tasks)
-    # Combine sensors and logs into a single dictionary
-    result = {
-        "sensors": sensors_json,
-        "tasks": tasks_json
-    }
-    # Return as JSON string
-    return json.dumps(result)
+    return json.dumps({"sensors": sensors, "tasks": tasks})
 
 
 @eel.expose
