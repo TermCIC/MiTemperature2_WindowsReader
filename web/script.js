@@ -173,9 +173,25 @@ function update_status() {
   });
 }
 
+function toggleGuide() {
+  const body = document.getElementById("guideBody");
+  const label = document.getElementById("guideToggleLabel");
+  const hidden = body.style.display === "none";
+  body.style.display = hidden ? "" : "none";
+  label.textContent = hidden ? "Hide" : "Show";
+  localStorage.setItem("guideHidden", hidden ? "0" : "1");
+}
+
 window.onload = () => {
   eel.get_version()(v => {
     document.getElementById("appVersion").textContent = `v${v}`;
   });
+
+  // Restore guide collapsed state
+  if (localStorage.getItem("guideHidden") === "1") {
+    document.getElementById("guideBody").style.display = "none";
+    document.getElementById("guideToggleLabel").textContent = "Show";
+  }
+
   setInterval(update_status, 1000);
 };
