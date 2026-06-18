@@ -173,4 +173,9 @@ function update_status() {
   });
 }
 
-window.onload = () => setInterval(update_status, 1000);
+window.onload = () => {
+  eel.get_version()(v => {
+    document.getElementById("appVersion").textContent = `v${v}`;
+  });
+  setInterval(update_status, 1000);
+};

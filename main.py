@@ -13,6 +13,8 @@ eel.bottle = SilentBottle()
 from backend import *
 from random import randint
 
+APP_VERSION = "3.0.0"
+
 save_tasks_to_json({})
 
 _base = sys._MEIPASS if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
@@ -45,6 +47,10 @@ async def run_in_background():
     except Exception as e:
         print(f"Error in background task: {e}")
 
+
+@eel.expose
+def get_version():
+    return APP_VERSION
 
 @eel.expose
 def update_status():
