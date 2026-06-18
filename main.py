@@ -1,3 +1,5 @@
+import os
+import sys
 import threading
 from bottle import Bottle, _stderr
 # Suppress bottle's built-in logging of HTTP requests
@@ -13,7 +15,8 @@ from random import randint
 
 save_tasks_to_json({})
 
-eel.init("web")
+_base = sys._MEIPASS if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
+eel.init(os.path.join(_base, "web"))
 
 # Global variables
 event_loop = None

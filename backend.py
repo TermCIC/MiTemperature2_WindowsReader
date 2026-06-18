@@ -78,8 +78,7 @@ class BLEDeviceHandler:
     def process_history_data(self, sender, data):
         (idx, ts, max_temp, max_hum, min_temp, min_hum) = struct.unpack_from('<IIhBhB', data)
         ts = self._start_time + ts
-        ts_date_time = datetime.fromtimestamp(ts)
-        ts_date_time = str(ts_date_time)
+        ts_date_time = datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
         min_temp /= 10
         max_temp /= 10
         history_data[idx] = [ts_date_time, min_temp, min_hum, max_temp, max_hum]
