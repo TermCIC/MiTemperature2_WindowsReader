@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://github.com/TermCIC/MiTemperature2_WindowsReader/blob/main/readmi.ico" width="96" alt="ReadMi Logo" />
+<img src="https://github.com/TermCIC/MiTemperature2_WindowsReader/blob/main/new_logo.png" width="128" alt="ReadMi Logo" />
 
 # ReadMi
 
