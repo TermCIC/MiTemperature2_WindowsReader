@@ -1,1 +1,15 @@
-{}
+{
+    "A4:C1:38:8C:87:1D": {
+        "address": "A4:C1:38:8C:87:1D",
+        "name": "Mi_1",
+        "status": "Available",
+        "records": {
+            "1793872969": {
+                "Temperature": 26.87,
+                "Humidity": 67,
+                "Voltage": 2.984,
+                "Battery": 78.03
+            }
+        }
+    }
+}

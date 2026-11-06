@@ -1,6 +1,18 @@
 {
-    "1781773256": {
+    "1793872885": {
         "task_type": "Scanning sensors",
+        "status": "finished"
+    },
+    "1793872924": {
+        "task_type": "Change sensor name",
+        "status": "finished"
+    },
+    "1793872935": {
+        "task_type": "Fetch data",
+        "status": "Saved historical data to DATA_name_None_t_1793873060.csv"
+    },
+    "1793873006": {
+        "task_type": "Change sensor name",
         "status": "finished"
     }
 }
